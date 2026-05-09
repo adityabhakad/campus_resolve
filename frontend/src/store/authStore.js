@@ -13,6 +13,7 @@ const useAuthStore = create((set) => ({
       const res = await api.get('/auth/me');
       set({ user: res.data, isAuthenticated: true, isCheckingAuth: false });
     } catch (error) {
+      localStorage.removeItem('token');
       set({ user: null, isAuthenticated: false, isCheckingAuth: false });
     }
   },
@@ -21,6 +22,7 @@ const useAuthStore = create((set) => ({
     set({ isLoading: true });
     try {
       const res = await api.post('/auth/register', userData);
+      localStorage.setItem('token', res.data.token);
       set({ user: res.data, isAuthenticated: true, isLoading: false });
       toast.success("Registration successful!");
       return true;
@@ -35,6 +37,7 @@ const useAuthStore = create((set) => ({
     set({ isLoading: true });
     try {
       const res = await api.post('/auth/login', { email, password });
+      localStorage.setItem('token', res.data.token);
       set({ user: res.data, isAuthenticated: true, isLoading: false });
       toast.success("Successfully logged in!");
       return res.data;
@@ -48,6 +51,7 @@ const useAuthStore = create((set) => ({
   logout: async () => {
     try {
       await api.post('/auth/logout');
+      localStorage.removeItem('token');
       set({ user: null, isAuthenticated: false });
       toast.success("Logged out successfully");
     } catch (error) {

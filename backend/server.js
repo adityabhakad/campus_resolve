@@ -15,6 +15,15 @@ dotenv.config();
 
 const app = express();
 
+app.set("trust proxy", 1);
+
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN,
+  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",") : []),
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+].filter(Boolean).map((origin) => origin.trim());
+
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,7 +34,7 @@ app.use(cookieParser());
 // Enable CORS
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -69,4 +78,3 @@ connectDB().then(() => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   });
 });
-

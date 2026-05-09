@@ -7,6 +7,20 @@ const generateToken = (id) => {
   });
 };
 
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+});
+
+const getClearCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  expires: new Date(0),
+});
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -41,12 +55,7 @@ export const register = async (req, res) => {
     if (user) {
       const token = generateToken(user._id);
       
-      res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie('jwt', token, getCookieOptions());
 
       res.status(201).json({
         _id: user._id,
@@ -80,12 +89,7 @@ export const login = async (req, res) => {
 
       const token = generateToken(user._id);
 
-      res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie('jwt', token, getCookieOptions());
 
       res.json({
         _id: user._id,
@@ -107,10 +111,7 @@ export const login = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 export const logout = (req, res) => {
-  res.cookie('jwt', '', {
-    httpOnly: true,
-    expires: new Date(0),
-  });
+  res.cookie('jwt', '', getClearCookieOptions());
   res.status(200).json({ message: "Logged out successfully" });
 };
 
