@@ -72,6 +72,11 @@ typings/
 .env
 .env.test
 
+# Generated project report artifacts
+Campus Resolve Project Report.docx
+report_assets/
+generate_report.py
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
