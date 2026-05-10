@@ -1,39 +1,15 @@
 import express from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import crypto from "crypto";
 
 const router = express.Router();
 
-// Ensure upload directory exists
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Set Storage Engine
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-
 // Check File Type
 function checkFileType(file, cb) {
-  // Allowed ext
-  const filetypes = /jpeg|jpg|png|webp/;
-  // Check ext
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // Check mime
+  const filetypes = /^image\/(jpeg|jpg|png|webp)$/;
   const mimetype = filetypes.test(file.mimetype);
 
-  if (mimetype && extname) {
+  if (mimetype) {
     return cb(null, true);
   } else {
     cb(new Error("Images Only! (JPEG, JPG, PNG, WEBP)"));
@@ -42,22 +18,56 @@ function checkFileType(file, cb) {
 
 // Init Upload (Max 5 images of 5MB max each)
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5000000 }, 
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
 });
 
+const uploadToCloudinary = async (file) => {
+  const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+    throw new Error("Cloudinary environment variables are not configured");
+  }
+
+  const timestamp = Math.round(Date.now() / 1000);
+  const folder = "campus-resolve";
+  const signaturePayload = `folder=${folder}&timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
+  const signature = crypto.createHash("sha1").update(signaturePayload).digest("hex");
+
+  const formData = new FormData();
+  formData.append("file", new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+  formData.append("api_key", CLOUDINARY_API_KEY);
+  formData.append("timestamp", String(timestamp));
+  formData.append("folder", folder);
+  formData.append("signature", signature);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error?.message || "Cloudinary upload failed");
+  }
+
+  return data.secure_url;
+};
+
 // Route for multiple image uploads
-router.post("/", upload.array("images", 5), (req, res) => {
+router.post("/", upload.array("images", 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).send("No files uploaded.");
     }
     
-    // Create an array of relative paths to valid static files
-    const filePaths = req.files.map(file => `/uploads/${file.filename}`);
+    const filePaths = await Promise.all(req.files.map(uploadToCloudinary));
     
     res.status(200).json({
       message: "Images Uploaded Successfully",
