@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import useComplaintStore from "../store/complaintStore";
-import api from "../lib/axios";
+import api, { getAssetUrl } from "../lib/axios";
 import toast from "react-hot-toast";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -799,8 +799,8 @@ export default function AdminDashboard() {
                       {selectedComplaint.images?.length > 0 ? (
                          <div className="grid grid-cols-2 gap-3">
                            {selectedComplaint.images.map((img, i) => (
-                             <a key={i} href={`http://localhost:5000${img}`} target="_blank" rel="noreferrer" className="block aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 relative group">
-                               <img src={`http://localhost:5000${img}`} alt="evidence" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                             <a key={i} href={getAssetUrl(img)} target="_blank" rel="noreferrer" className="block aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 relative group">
+                               <img src={getAssetUrl(img)} alt="evidence" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                              </a>
                            ))}
@@ -857,8 +857,8 @@ export default function AdminDashboard() {
                                 {c.images && c.images.length > 0 && (
                                   <div className="flex flex-wrap gap-2 mt-2">
                                     {c.images.map((img, idx) => (
-                                      <a key={idx} href={`http://localhost:5000${img}`} target="_blank" rel="noreferrer" className="h-16 w-16 rounded-md overflow-hidden border border-slate-200 block hover:opacity-80 transition-opacity">
-                                        <img src={`http://localhost:5000${img}`} alt="Attached" className="w-full h-full object-cover" />
+                                      <a key={idx} href={getAssetUrl(img)} target="_blank" rel="noreferrer" className="h-16 w-16 rounded-md overflow-hidden border border-slate-200 block hover:opacity-80 transition-opacity">
+                                        <img src={getAssetUrl(img)} alt="Attached" className="w-full h-full object-cover" />
                                       </a>
                                     ))}
                                   </div>

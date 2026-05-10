@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 import useComplaintStore from "../store/complaintStore";
-import api from "../lib/axios";
+import api, { getAssetUrl } from "../lib/axios";
 import toast from "react-hot-toast";
 import * as exifr from "exifr";
 
@@ -674,8 +674,8 @@ export default function StudentDashboard() {
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" /> Attached Media ({selectedComplaint.images.length})</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedComplaint.images.map((img, idx) => (
-                          <a key={idx} href={`http://localhost:5000${img}`} target="_blank" rel="noopener noreferrer" className="h-20 w-20 rounded-lg overflow-hidden border border-slate-200 hover:opacity-80 transition-opacity">
-                            <img src={`http://localhost:5000${img}`} alt="Evidence" className="w-full h-full object-cover" />
+                          <a key={idx} href={getAssetUrl(img)} target="_blank" rel="noopener noreferrer" className="h-20 w-20 rounded-lg overflow-hidden border border-slate-200 hover:opacity-80 transition-opacity">
+                            <img src={getAssetUrl(img)} alt="Evidence" className="w-full h-full object-cover" />
                           </a>
                         ))}
                       </div>
@@ -704,8 +704,8 @@ export default function StudentDashboard() {
                             {comment.images && comment.images.length > 0 && (
                               <div className="flex flex-wrap gap-2 mt-2">
                                 {comment.images.map((img, idx) => (
-                                  <a key={idx} href={`http://localhost:5000${img}`} target="_blank" rel="noreferrer" className="h-16 w-16 rounded-md overflow-hidden border border-slate-200 block hover:opacity-80 transition-opacity">
-                                    <img src={`http://localhost:5000${img}`} alt="Attached" className="w-full h-full object-cover" />
+                                  <a key={idx} href={getAssetUrl(img)} target="_blank" rel="noreferrer" className="h-16 w-16 rounded-md overflow-hidden border border-slate-200 block hover:opacity-80 transition-opacity">
+                                    <img src={getAssetUrl(img)} alt="Attached" className="w-full h-full object-cover" />
                                   </a>
                                 ))}
                               </div>
